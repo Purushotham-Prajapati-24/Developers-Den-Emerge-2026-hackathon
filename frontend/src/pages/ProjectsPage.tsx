@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuthStore } from '../store/useAuthStore';
 import { NotificationBell } from '../components/notifications/NotificationBell';
+import { useRealTime } from '../hooks/useRealTime';
 
 interface Project {
   _id: string;
@@ -133,11 +134,19 @@ const ProjectCard = ({
           >
             {langIcon}
           </div>
-          {project.projectType === 'web-development' && (
-            <span className="text-[9px] font-['Inter'] uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#a78bfa]/10 text-[#a78bfa] border border-[#a78bfa]/20">
-              Web Dev
-            </span>
-          )}
+          <div className="flex flex-col gap-1">
+            {project.projectType === 'web-development' ? (
+              <span className="flex items-center gap-1 text-[8px] font-['Space_Grotesk'] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20">
+                <span className="w-1 h-1 rounded-full bg-[#10b981] animate-pulse" />
+                Web Weaver
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-[8px] font-['Space_Grotesk'] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#818cf8]/10 text-[#818cf8] border border-[#818cf8]/20">
+                <span className="w-1 h-1 rounded-full bg-[#818cf8]" />
+                Programming
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Title */}
@@ -228,7 +237,7 @@ export default function ProjectsPage() {
   const [creating, setCreating] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newLang, setNewLang] = useState('typescript');
-  const [newProjectType, setNewProjectType] = useState<'programming' | 'web-development'>('programming');
+  const [newProjectType, setNewProjectType] = useState<'programming' | 'web-development'>('web-development');
   const [showCreate, setShowCreate] = useState(false);
   const [error, setError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
@@ -247,6 +256,10 @@ export default function ProjectsPage() {
 
   useEffect(() => { fetchProjects(); }, []);
 
+  useRealTime('project-list-updated', () => {
+    fetchProjects();
+  });
+
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
@@ -262,7 +275,7 @@ export default function ProjectsPage() {
       setProjects((prev) => [data.project, ...prev]);
       setShowCreate(false);
       setNewTitle('');
-      setNewProjectType('programming');
+      setNewProjectType('web-development');
       setNewLang('typescript');
       navigate(`/workspace/${data.project._id}`);
     } catch (err: any) {
@@ -429,32 +442,49 @@ export default function ProjectsPage() {
               </div>
 
               <div>
-                <label className="block text-xs text-[#8a98b3] mb-1.5 font-['Inter'] uppercase tracking-wider">Mode</label>
-                <div className="flex bg-[#0a0d12] p-1 rounded-lg border border-[#1e2a3a]">
-                  <button
-                    type="button"
-                    onClick={() => setNewProjectType('programming')}
-                    className={`flex-1 py-1.5 text-xs font-['Inter'] rounded ${newProjectType === 'programming' ? 'bg-[#1e2a3a] text-[#f1f3fc]' : 'text-[#8a98b3] hover:text-[#f1f3fc]'}`}
-                  >
-                    Programming
-                  </button>
+                <label className="block text-xs text-[#8a98b3] mb-1.5 font-['Inter'] uppercase tracking-wider">Project Type</label>
+                <div className="flex bg-[#0a0d12] p-1 rounded-xl border border-[#1e2a3a]">
                   <button
                     type="button"
                     onClick={() => setNewProjectType('web-development')}
-                    className={`flex-1 py-1.5 text-xs font-['Inter'] rounded ${newProjectType === 'web-development' ? 'bg-[#1e2a3a] text-[#f1f3fc]' : 'text-[#8a98b3] hover:text-[#f1f3fc]'}`}
+                    className={`flex-1 flex flex-col items-center py-3 rounded-lg transition-all ${
+                      newProjectType === 'web-development' 
+                        ? 'bg-[#10b981]/10 text-[#10b981] ring-1 ring-[#10b981]/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' 
+                        : 'text-[#4a5568] hover:text-[#8a98b3]'
+                    }`}
                   >
-                    Web Dev
+                    <span className="text-sm font-bold font-['Space_Grotesk']">Web Dev</span>
+                    <span className="text-[9px] uppercase tracking-tighter opacity-60">AI Weaver + Preview</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewProjectType('programming')}
+                    className={`flex-1 flex flex-col items-center py-3 rounded-lg transition-all ${
+                      newProjectType === 'programming' 
+                        ? 'bg-[#818cf8]/10 text-[#818cf8] ring-1 ring-[#818cf8]/30 shadow-[0_0_15px_rgba(129,140,248,0.1)]' 
+                        : 'text-[#4a5568] hover:text-[#8a98b3]'
+                    }`}
+                  >
+                    <span className="text-sm font-bold font-['Space_Grotesk']">Programming</span>
+                    <span className="text-[9px] uppercase tracking-tighter opacity-60">Terminal + Full Scripting</span>
                   </button>
                 </div>
               </div>
 
-              {newProjectType === 'programming' && (
+              {newProjectType === 'web-development' ? (
+                <div className="bg-[#10b981]/5 border border-[#10b981]/20 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#8a98b3] font-['Inter']">Fixed Language</span>
+                    <span className="px-2 py-0.5 rounded bg-[#10b981]/20 text-[#10b981] font-mono text-[10px]">HTML / CSS / JS</span>
+                  </div>
+                </div>
+              ) : (
                 <div>
                   <label className="block text-xs text-[#8a98b3] mb-1.5 font-['Inter'] uppercase tracking-wider">Language</label>
                   <select
                     value={newLang}
                     onChange={(e) => setNewLang(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-lg bg-[#0a0d12] border border-[#1e2a3a] text-[#f1f3fc] font-['Inter'] text-sm focus:outline-none focus:border-[#a78bfa]/50 transition-colors"
+                    className="w-full px-4 py-2.5 rounded-lg bg-[#0a0d12] border border-[#1e2a3a] text-[#f1f3fc] font-['Inter'] text-sm focus:outline-none focus:border-[#818cf8]/50 transition-colors appearance-none cursor-pointer"
                   >
                     <option value="typescript">TypeScript</option>
                     <option value="javascript">JavaScript</option>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCollaborationStore } from '../../store/useCollaborationStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import api from '../../services/api';
+import { useRealTime } from '../../hooks/useRealTime';
 
 interface UserInfo {
   _id: string;
@@ -40,6 +41,10 @@ export const CollaboratorsPanel = ({
   const { users: onlineUsers } = useCollaborationStore();
   const { user: currentUser } = useAuthStore();
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
+  useRealTime('collaborator-list-updated', () => {
+    onRefresh();
+  });
 
   const isOnline = (username: string) => onlineUsers.some(u => u.name === username);
 

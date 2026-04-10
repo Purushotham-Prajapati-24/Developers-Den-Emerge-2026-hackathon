@@ -9,8 +9,10 @@ interface SetupSocketOptions {
   corsOrigin: string | string[];
 }
 
+export let io: SocketIOServer;
+
 export const initSocketService = ({ server, corsOrigin }: SetupSocketOptions) => {
-  const io = new SocketIOServer(server, {
+  io = new SocketIOServer(server, {
     cors: {
       origin: corsOrigin,
       methods: ['GET', 'POST'],
@@ -19,9 +21,6 @@ export const initSocketService = ({ server, corsOrigin }: SetupSocketOptions) =>
   });
 
   // ── y-socket.io: initialize FIRST, before any middleware ─────────────────
-  // CRITICAL: y-socket.io creates its own sub-namespace (yjs|<room>).
-  // If we attach auth middleware to io.use(), it blocks that sub-namespace.
-  // y-socket.io must be initialized on the io instance with NO global auth middleware.
   const ySocketIO = new YSocketIO(io, {
     gcEnabled: false, // Keep room state so late-joiners get full doc
   });
@@ -30,7 +29,6 @@ export const initSocketService = ({ server, corsOrigin }: SetupSocketOptions) =>
   console.log('[SOCKET] y-socket.io CRDT engine initialized');
 
   // ── Default namespace: app events (chat relay, project join) ─────────────
-  // Auth middleware applied ONLY to the default namespace connection handler.
   io.on('connection', (socket) => {
     const token = socket.handshake.auth?.token || (socket.handshake.query?.token as string);
 
@@ -50,7 +48,14 @@ export const initSocketService = ({ server, corsOrigin }: SetupSocketOptions) =>
     }
 
     const user = (socket as any).user;
-    console.log(`[SOCKET] Authenticated: ${socket.id} (${user?.id || user?.sub || 'unknown'})`);
+    const userId = user.userId || user.id || user.sub;
+    console.log(`[SOCKET] Authenticated: ${socket.id} (${userId})`);
+
+    // Join private user room for targeted notifications
+    if (userId) {
+      socket.join(`user:${userId}`);
+      console.log(`[SOCKET] User ${userId} joined their private room`);
+    }
 
     // Room join — used by app-level broadcast (e.g. notifications, cursor list)
     socket.on('join-project', (projectId: string) => {
@@ -58,11 +63,9 @@ export const initSocketService = ({ server, corsOrigin }: SetupSocketOptions) =>
       console.log(`[SOCKET] ${socket.id} joined room project:${projectId}`);
     });
 
-    // ── Chat relay over Socket.IO (fallback alongside Yjs array) ─────────────
-    // This lets clients that aren't in sync yet still receive messages instantly.
+    // ── Chat relay over Socket.IO ────────────────────────────────────────────
     socket.on('chat-message', (data: { projectId: string; message: any }) => {
       const { projectId, message } = data;
-      // Broadcast to all others in this project room
       socket.to(`project:${projectId}`).emit('chat-message', message);
     });
 

@@ -32,12 +32,12 @@ export const MonacoCollaborative = ({ projectId, language = 'javascript', role =
   const { user } = useAuthStore();
   const { activeFileId, files } = useCollaborationStore();
 
-  // Find language for active file
-  const activeLang = files.find(f => f.id === activeFileId)?.language || language;
+  const activeFile = files.find((f) => f.id === activeFileId);
+  const activeLang = activeFile?.language || language;
+  const activeFileName = activeFile?.name || (projectType === 'web-development' ? 'index.html' : 'Untitled');
 
   // owner and editor roles can type; reader/commenter cannot
   const isReadOnly = role === 'reader' || role === 'commenter';
-  // Note: 'owner' and 'editor' both allow editing
 
   const handleEditorDidMount = (editor: any, monacoInstance: any) => {
     editorRef.current = editor;
@@ -146,10 +146,33 @@ export const MonacoCollaborative = ({ projectId, language = 'javascript', role =
 
   return (
     <div className="w-full h-full relative rounded-xl overflow-hidden bg-[#0a0e14] shadow-[0_12px_40px_rgba(0,0,0,0.5)] flex flex-col">
-      {/* File Tabs header (optional padding if we want tabs here later, but WorkspacePage has Explorer) */}
-      <div className="h-2 w-full bg-[#111720]" />
+      {/* File Header area */}
+      <div className="h-10 w-full bg-[#111720] border-b border-[#1e2a3a] flex items-center px-4 justify-between flex-shrink-0">
+        <div className="flex items-center gap-2.5 overflow-hidden">
+          <div className="flex items-center justify-center w-5 h-5 rounded bg-[#1e2a3a] text-[#8a98b3]">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <span className="text-xs font-['Inter'] font-medium text-[#f1f3fc] truncate">
+            {activeFileName}
+          </span>
+          {activeFile?.isMain && (
+            <span className="text-[9px] uppercase tracking-tighter px-1.5 py-0.5 rounded bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20 font-bold">
+              Main
+            </span>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono text-[#4a5568] uppercase">
+            {activeLang}
+          </span>
+        </div>
+      </div>
+
       <Editor
-        height="calc(100% - 8px)"
+        height="calc(100% - 40px)"
         language={activeLang}
         defaultValue={`// ... Loading\n`}
         onMount={handleEditorDidMount}
@@ -157,8 +180,8 @@ export const MonacoCollaborative = ({ projectId, language = 'javascript', role =
           readOnly: isReadOnly,
           fontFamily: '"JetBrains Mono", "Fira Code", monospace',
           fontLigatures: true,
-          fontSize: 14,
-          lineHeight: 24,
+          fontSize: projectType === 'web-development' ? 14 : 14,
+          lineHeight: projectType === 'web-development' ? 26 : 24,
           minimap: { enabled: false },
           renderLineHighlight: 'line',
           hideCursorInOverviewRuler: true,
@@ -170,6 +193,15 @@ export const MonacoCollaborative = ({ projectId, language = 'javascript', role =
           bracketPairColorization: { enabled: true },
           suggest: { showIcons: true },
           tabSize: 2,
+          // ── Web Dev enhancements ──────────────────────────────────────────
+          // Format on paste/type helps keep generated HTML pretty
+          formatOnPaste: projectType === 'web-development',
+          formatOnType: projectType === 'web-development',
+          // Show CSS color swatches inline
+          colorDecorators: projectType === 'web-development',
+          // Emmet abbreviation expansion for HTML
+          emptySelectionClipboard: true,
+          wordWrap: projectType === 'web-development' ? 'on' : 'off',
         }}
       />
       {isReadOnly && (

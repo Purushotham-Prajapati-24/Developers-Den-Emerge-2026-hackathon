@@ -3,6 +3,7 @@ import Notification from '../models/Notification';
 import Project from '../models/Project';
 import User from '../models/User';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import { io } from '../services/socket.service';
 
 // GET /api/notifications
 export const getUserNotifications = async (req: AuthRequest, res: Response) => {
@@ -57,8 +58,16 @@ export const respondToInvitation = async (req: AuthRequest, res: Response) => {
           
           // Add project to user's projects list
           await User.findByIdAndUpdate(userId, { $addToSet: { projects: project._id } });
+
+          // Signal room that team has changed
+          io.to(`project:${project._id}`).emit('collaborator-list-updated');
+          // Signal user that projects list changed
+          io.to(`user:${userId}`).emit('project-list-updated', { action: 'added', projectId: project._id });
         }
       }
+    } else {
+      // Re-trigger notification count for the recipient just in case UI needs to clear
+      io.to(`user:${userId}`).emit('notification-received');
     }
 
     return res.status(200).json({ message: `Invitation ${status}`, status });

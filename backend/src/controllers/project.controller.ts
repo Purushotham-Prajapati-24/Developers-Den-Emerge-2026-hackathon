@@ -1,9 +1,11 @@
 import { Response } from 'express';
 import { z } from 'zod';
+import crypto from 'crypto';
 import Project from '../models/Project';
 import User from '../models/User';
 import Notification from '../models/Notification';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import { io } from '../services/socket.service';
 
 const createProjectSchema = z.object({
   title: z.string().min(1).max(100),
@@ -22,12 +24,41 @@ export const createProject = async (req: AuthRequest, res: Response) => {
     const { title, language, projectType } = createProjectSchema.parse(req.body);
     const userId = req.user!.userId;
 
+    let initialFiles: any[] = [];
+    if (projectType === 'web-development') {
+      initialFiles = [{
+        id: 'index-html-id', // Simplified internal ID for the seed file
+        name: 'index.html',
+        language: 'html',
+        isMain: true,
+        content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Web Project</title>
+    <style>
+        body { font-family: system-ui; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0a0d12; color: white; }
+        .container { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Emerge</h1>
+        <p>Use the Web Weaver AI on the right to start building.</p>
+    </div>
+</body>
+</html>`
+      }];
+    }
+
     const project = await Project.create({
       title,
       language,
       projectType,
       owner: userId,
       collaborators: [{ user: userId, role: 'owner' }],
+      files: initialFiles
     });
 
     // Add project reference to user document
@@ -177,6 +208,9 @@ export const inviteCollaborator = async (req: AuthRequest, res: Response) => {
       type: 'invitation'
     });
 
+    // Real-time notification to target user
+    io.to(`user:${targetUser._id}`).emit('notification-received');
+
     return res.status(200).json({ message: 'Invitation sent to user' });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to invite collaborator' });
@@ -206,6 +240,9 @@ export const updateRole = async (req: AuthRequest, res: Response) => {
 
     project.collaborators[collaboratorIndex].role = role as any;
     await project.save();
+
+    // Signal room that team has changed
+    io.to(`project:${projectId}`).emit('collaborator-list-updated');
 
     return res.status(200).json({ message: 'Role updated successfully' });
   } catch (error) {
@@ -238,6 +275,10 @@ export const removeCollaborator = async (req: AuthRequest, res: Response) => {
     // Remove from user's projects list
     await User.findByIdAndUpdate(userId, { $pull: { projects: projectId } });
 
+    // Signal room and user
+    io.to(`project:${projectId}`).emit('collaborator-list-updated');
+    io.to(`user:${userId}`).emit('project-list-updated', { action: 'removed', projectId });
+
     return res.status(200).json({ message: 'Collaborator removed' });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to remove collaborator' });
@@ -263,8 +304,80 @@ export const cancelInvitation = async (req: AuthRequest, res: Response) => {
       status: 'pending'
     });
 
+    // Signal room and target user
+    io.to(`project:${projectId}`).emit('collaborator-list-updated');
+    io.to(`user:${recipientId}`).emit('notification-received');
+
     return res.status(200).json({ message: 'Invitation cancelled' });
   } catch (error) {
     return res.status(500).json({ message: 'Failed to cancel invitation' });
+  }
+};
+
+// POST /api/projects/:id/deploy
+export const deployToVercel = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id: projectId } = req.params;
+    const { files } = req.body; // Expecting array of { file: string, data: string }
+
+    if (!files || !Array.isArray(files) || files.length === 0) {
+      return res.status(400).json({ message: 'No files provided for deployment' });
+    }
+
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ message: 'Project not found' });
+
+    // Sanitize project name for Vercel (alphanumeric and hyphens only, max 100)
+    const sanitizedName = project.title
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .substring(0, 100);
+
+    const vercelToken = process.env.VERCEL_TOKEN;
+    if (!vercelToken) {
+      return res.status(500).json({ message: 'Vercel configuration missing on server' });
+    }
+
+    console.log(`[VERCEL] Deploying project "${sanitizedName}" (${projectId})...`);
+
+    const response = await fetch('https://api.vercel.com/v13/deployments', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${vercelToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: sanitizedName,
+        files: files.map((f: any) => ({
+          file: f.file,
+          data: f.data,
+        })),
+        projectSettings: {
+          framework: null, // Static files
+        },
+      }),
+    });
+
+    const data = await response.json() as any;
+
+    if (!response.ok) {
+      console.error('[VERCEL] Deployment failed:', data);
+      return res.status(response.status).json({ 
+        message: 'Vercel deployment failed', 
+        error: data.error?.message || 'Unknown error' 
+      });
+    }
+
+    console.log(`[VERCEL] ✅ Deployment successful: ${data.url}`);
+
+    return res.status(200).json({
+      message: 'Project deployed successfully',
+      url: data.url,
+      inspectUrl: `https://vercel.com/new/project/deployments/${data.id}`,
+    });
+  } catch (error: any) {
+    console.error('[VERCEL] Deployment error:', error);
+    return res.status(500).json({ message: 'Failed to trigger deployment', error: error.message });
   }
 };

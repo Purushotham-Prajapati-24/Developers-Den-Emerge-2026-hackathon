@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
+import { useRealTime } from '../../hooks/useRealTime';
 
 interface Notification {
   _id: string;
@@ -10,14 +11,14 @@ interface Notification {
 }
 
 export const NotificationBell = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const fetchNotifications = async () => {
     try {
       const { data } = await api.get('/notifications');
-      setNotifications(data.notifications);
+      setNotifications(data.notifications || []);
     } catch (err) {
       console.error('Failed to fetch notifications');
     }
@@ -25,9 +26,11 @@ export const NotificationBell = () => {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Polling every 30s
-    return () => clearInterval(interval);
   }, []);
+
+  useRealTime('notification-received', () => {
+    fetchNotifications();
+  });
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -43,9 +46,7 @@ export const NotificationBell = () => {
     try {
       await api.post(`/notifications/${id}/respond`, { status });
       setNotifications((prev) => prev.filter((n) => n._id !== id));
-      if (status === 'accepted') {
-        window.location.reload(); // Refresh to show new project or update role
-      }
+      // No reload needed, as useRealTime will handle state sync
     } catch (err) {
       console.error('Failed to respond to notification');
     }

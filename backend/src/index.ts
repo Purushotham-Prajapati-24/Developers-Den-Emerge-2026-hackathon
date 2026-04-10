@@ -69,12 +69,30 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok', service: 'DevVerse Backend Engine' });
 });
 
-// Serve frontend static files
-app.use(express.static(path.join(__dirname, '../../public')));
+// Serve backend static files (usually for shared assets or the internal public folder)
+const publicPath = path.resolve(process.cwd(), 'public');
+app.use(express.static(publicPath));
+
+// Specific 404 handler for API routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ 
+    message: `API Route not found: ${req.method} ${req.originalUrl}`,
+    suggestion: 'Ensure you have restarted the backend server if you recently added this route.'
+  });
+});
 
 // Catch-all route to serve index.html for SPA frontend routing
+// (In production, this would be the frontend's built index.html)
 app.use((req, res) => {
-  res.sendFile(path.join(__dirname, '../../public/index.html'));
+  const indexPath = path.join(publicPath, 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      res.status(404).json({ 
+        error: 'Not Found',
+        message: `The requested resource was not found, and no default index.html was available at ${indexPath}`
+      });
+    }
+  });
 });
 
 // Initialize WebSocket (Yjs CRDT collaborative sync)

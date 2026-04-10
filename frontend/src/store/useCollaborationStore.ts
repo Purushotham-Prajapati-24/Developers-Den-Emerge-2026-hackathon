@@ -35,6 +35,8 @@ interface CollaborationState {
   setFiles: (files: FileNode[]) => void;
   setActiveFileId: (fileId: string | null) => void;
   appendTerminal: (text: string) => void;
+  /** Inject a message from the Emerge AI Architect into the chat */
+  addAIMessage: (text: string) => void;
 }
 
 export const useCollaborationStore = create<CollaborationState>((set) => ({
@@ -58,5 +60,19 @@ export const useCollaborationStore = create<CollaborationState>((set) => ({
 
   appendTerminal: (text) => set((state) => ({ 
     terminalOutput: state.terminalOutput + text 
+  })),
+
+  addAIMessage: (text) => set((state) => ({
+    messages: [
+      ...state.messages,
+      {
+        id: Math.random().toString(36).substring(2, 11),
+        senderId: 'emerge-ai',
+        senderName: 'Lead Architect',
+        text,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        seenBy: [],
+      },
+    ],
   })),
 }));

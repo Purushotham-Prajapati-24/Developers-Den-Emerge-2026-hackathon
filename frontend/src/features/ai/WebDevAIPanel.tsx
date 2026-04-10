@@ -23,7 +23,8 @@ function stripFences(raw: string): string {
  *  falls back to the Monaco instance setValue otherwise. */
 function injectCodeToEditor(code: string) {
   const collabDoc = (window as any).__collabDoc;
-  const activeFileId = (window as any).__collabActiveFileId;
+  const storeState = (window as any).__collabStoreGetState?.();
+  const activeFileId = storeState?.activeFileId;
 
   if (collabDoc && activeFileId) {
     try {
@@ -64,14 +65,6 @@ export const WebDevAIPanel = () => {
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Expose activeFileId globally so injectCodeToEditor can read it
-  const syncActiveFile = useCallback(() => {
-    const storeState = (window as any).__collabStoreGetState?.();
-    if (storeState?.activeFileId) {
-      (window as any).__collabActiveFileId = storeState.activeFileId;
-    }
-  }, []);
-
   const getEditorCode = useCallback((): string => {
     const editor = (window as any).__monacoEditorInstance;
     return editor ? editor.getValue() : '';
@@ -81,7 +74,6 @@ export const WebDevAIPanel = () => {
     const trimmed = prompt.trim();
     if (!trimmed || status.kind === 'loading') return;
 
-    syncActiveFile();
     setStatus({ kind: 'loading' });
 
     try {
@@ -118,7 +110,7 @@ export const WebDevAIPanel = () => {
       {/* ── Header ─────────────────────────── */}
       <div className="px-4 pt-4 pb-3 border-b border-[#1e2a3a] flex-shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center text-base shadow-[0_0_20px_rgba(16,185,129,0.35)]">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#10b981] to-[#059669] flex items-center justify-center text-base shadow-[0_0_20px_rgba(16,185,129,0.35)] animate-pulse">
             ✦
           </div>
           <div className="flex-1 min-w-0">
@@ -258,10 +250,17 @@ export const WebDevAIPanel = () => {
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#10b981] text-[#022c22] text-xs font-['Inter'] font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#34d399] active:scale-95 transition-all shadow-[0_0_12px_rgba(16,185,129,0.4)]"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[#022c22] text-xs font-['Inter'] font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed ${
+                isLoading 
+                  ? 'bg-slate-700 text-slate-400' 
+                  : 'bg-[#10b981] hover:bg-[#34d399]'
+              }`}
             >
               {isLoading ? (
-                'Generating…'
+                <>
+                  <div className="w-3 h-3 border-2 border-slate-500 border-t-[#10b981] rounded-full animate-spin mr-1" />
+                  Weaving…
+                </>
               ) : (
                 <>
                   Vibe it
