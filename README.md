@@ -1,7 +1,7 @@
 <div align="center">
-  <h1>🚀 Emerge - Developer's Den</h1>
-  <p><h3>The Kinetic Forge for Collaborative Engineering</h3></p>
-</div>
+
+# 🚀 Emerge - Developer's Den
+### The Kinetic Forge for Collaborative Engineering
 
 [![Maintained: Yes](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/Purushotham-Prajapati-24/Emerge-2026/graphs/commit-activity)
 [![Users: 50+](https://img.shields.io/badge/Tested%20on-50+%20Users-blue.svg?style=flat-square&logo=dynamic-yield&logoColor=white)](#)
