@@ -1,8 +1,7 @@
-# Emerge — Developer's Den 🚀
-
 <div align="center">
-
-![Emerge Hero](https://capsule-render.vercel.app/render?type=soft&color=auto&height=200&section=header&text=Emerge%20%D8%9F&fontSize=90&animation=fadeIn&fontAlignY=38&desc=The%20Kinetic%20Forge%20for%20Collaborative%20Engineering&descAlignY=62&descSize=20)
+  <h1>🚀 Emerge - Developer's Den</h1>
+  <p><h3>The Kinetic Forge for Collaborative Engineering</h3></p>
+</div>
 
 [![Maintained: Yes](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/Purushotham-Prajapati-24/Emerge-2026/graphs/commit-activity)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -48,26 +47,19 @@ graph TD
 
 ---
 
-## ⚡ Visual Experience
+## ⚡ Live Visual Tour
 
-Experience the **Kinetic Terminal** in action. Our interface is designed for focus, utilizing deep tonal shifts and glassmorphism to create a physical workspace feeling.
+Experience the **Kinetic Terminal** in action. Our interface is designed for focus, utilizing deep tonal shifts and glassmorphism.
 
-````carousel
-![Workspace Capture](frontend/public/assets/showcase/workspace.png)
-Workspace: Monaco powered editor with real-time sync and integrated terminal.
-<!-- slide -->
-![AI Architect](frontend/public/assets/showcase/ai_architect.png)
-AI Architect: Context-aware assistance with specialized coding actions.
-<!-- slide -->
-![Dashboard](frontend/public/assets/showcase/dashboard.png)
-Project Dashboard: Manage your collaborative labs and team invitations.
-<!-- slide -->
-![Multiplayer Chat](frontend/public/assets/showcase/chat.png)
-Collaborative Chat: Real-time communication while you build.
-<!-- slide -->
-![Auth Experience](frontend/public/assets/showcase/auth.png)
-Auth: Secure, identity-first entry via Developer's Den.
-````
+| **The Workspace** | **AI Architect** |
+| :---: | :---: |
+| ![Workspace](frontend/public/assets/showcase/workspace.png) | ![Architect](frontend/public/assets/showcase/ai_architect.png) |
+| *Real-time collaborative editor* | *Context-aware engineering assistant* |
+
+| **Project Dashboard** | **Multiplayer Chat** |
+| :---: | :---: |
+| ![Dashboard](frontend/public/assets/showcase/dashboard.png) | ![Chat](frontend/public/assets/showcase/chat.png) |
+| *Team project management* | *Laminar sync communication* |
 
 ---
 
@@ -90,7 +82,7 @@ Auth: Secure, identity-first entry via Developer's Den.
 
 | Frontend | Backend | Database | AI & Auth |
 | :---: | :---: | :---: | :---: |
-| <img src="https://svgl.app/library/react.svg" width="40" height="40" alt="React" /> | <img src="https://svgl.app/library/node.svg" width="40" height="40" alt="Node" /> | <img src="https://svgl.app/library/mongodb.svg" width="40" height="40" alt="MongoDB" /> | <img src="https://svgl.app/library/clerk_dark.svg" width="40" height="40" alt="Clerk" /> |
+| <img src="https://cdn.simpleicons.org/react/61DAFB" width="40" height="40" alt="React" /> | <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="40" height="40" alt="Node" /> | <img src="https://cdn.simpleicons.org/mongodb/47A248" width="40" height="40" alt="MongoDB" /> | <img src="https://cdn.simpleicons.org/clerk/6C47FF" width="40" height="40" alt="Clerk" /> |
 | **React 19** | **Express** | **MongoDB** | **Clerk** |
 | [Vite](https://vitejs.dev/) | [Socket.io](https://socket.io/) | [Atlas](https://www.mongodb.com/atlas) | [Groq LPU](https://groq.com/) |
 
