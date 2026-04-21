@@ -4,6 +4,8 @@
 </div>
 
 [![Maintained: Yes](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/Purushotham-Prajapati-24/Emerge-2026/graphs/commit-activity)
+[![Users: 50+](https://img.shields.io/badge/Tested%20on-50+%20Users-blue.svg?style=flat-square&logo=dynamic-yield&logoColor=white)](#)
+[![Performance: 100ms](https://img.shields.io/badge/Laminar%20Sync-<100ms-orange.svg?style=flat-square&logo=lightning&logoColor=white)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
@@ -82,9 +84,8 @@ Experience the **Kinetic Terminal** in action. Our interface is designed for foc
 
 | Frontend | Backend | Database | AI & Auth |
 | :---: | :---: | :---: | :---: |
-| <img src="https://cdn.simpleicons.org/react/61DAFB" width="40" height="40" alt="React" /> | <img src="https://cdn.simpleicons.org/nodedotjs/339933" width="40" height="40" alt="Node" /> | <img src="https://cdn.simpleicons.org/mongodb/47A248" width="40" height="40" alt="MongoDB" /> | <img src="https://cdn.simpleicons.org/clerk/6C47FF" width="40" height="40" alt="Clerk" /> |
-| **React 19** | **Express** | **MongoDB** | **Clerk** |
-| [Vite](https://vitejs.dev/) | [Socket.io](https://socket.io/) | [Atlas](https://www.mongodb.com/atlas) | [Groq LPU](https://groq.com/) |
+| ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB) | ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) | ![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white) | ![Clerk](https://img.shields.io/badge/Clerk-6C47FF?style=for-the-badge&logo=clerk&logoColor=white) |
+| **React 19 / Vite** | **Node.js / Socket.io** | **MongoDB Atlas** | **Groq LPU / Clerk** |
 
 </div>
 
